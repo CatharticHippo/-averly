@@ -4,14 +4,15 @@ import { SplashScreen } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { View } from 'react-native';
 import { ThemeProvider } from '../contexts/ThemeContext';
+import { CartProvider } from '../contexts/CartContext';
+import { FavoritesProvider } from '../contexts/FavoritesContext';
+import { BrandsProvider } from '../contexts/BrandsContext';
 
-// Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     // Add your custom fonts here if needed
-    // 'Inter-Bold': require('../assets/fonts/Inter-Bold.otf'),
   });
 
   useEffect(() => {
@@ -30,21 +31,26 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: 'transparent' },
-          animation: 'fade',
-        }}
-      >
-        <Stack.Screen
-          name="index"
-          options={{
-            // Prevent going back to splash screen
-            gestureEnabled: false,
-          }}
-        />
-      </Stack>
+      <CartProvider>
+        <FavoritesProvider>
+          <BrandsProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: 'transparent' },
+                animation: 'fade',
+              }}
+            >
+              <Stack.Screen
+                name="index"
+                options={{
+                  gestureEnabled: false,
+                }}
+              />
+            </Stack>
+          </BrandsProvider>
+        </FavoritesProvider>
+      </CartProvider>
     </ThemeProvider>
   );
 }

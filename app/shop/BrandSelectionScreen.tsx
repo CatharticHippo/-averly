@@ -1,99 +1,84 @@
-import React, { useState } from 'react';
-import { StyleSheet, FlatList, Dimensions } from 'react-native';
+import React from 'react';
+import { StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedView } from '../../components/ui/ThemedView';
 import { ThemedText } from '../../components/ui/ThemedText';
-import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { BrandTile } from '../../components/shop/BrandTile';
+import { useSelectedBrands } from '../../contexts/BrandsContext';
+import { useAppTheme } from '../../contexts/ThemeContext';
 
-// Sample brands data - replace with your actual brands
+// Previous imports remain the same...
+
 const BRANDS = [
-  { id: '1', name: 'Nike', logo: '👟' },
-  { id: '2', name: 'Adidas', logo: '🏃' },
-  { id: '3', name: 'Zara', logo: '👕' },
-  { id: '4', name: 'H&M', logo: '👗' },
-  { id: '5', name: 'Uniqlo', logo: '🧥' },
-  { id: '6', name: 'GAP', logo: '👖' },
-  { id: '7', name: 'Levi\'s', logo: '🎽' },
-  { id: '8', name: 'North Face', logo: '🧥' },
-  { id: '9', name: 'Under Armour', logo: '🎽' },
-  { id: '10', name: 'Puma', logo: '👟' },
-  // Add more brands as needed
+  { id: 'nike', name: 'Nike', logo: '👟' },
+  { id: 'adidas', name: 'Adidas', logo: '🏃' },
+  { id: 'northface', name: 'The North Face', logo: '🏔️' },
+  { id: 'patagonia', name: 'Patagonia', logo: '🌲' },
+  { id: 'lululemon', name: 'Lululemon', logo: '🧘' },
 ];
 
-const NUM_COLUMNS = 2;
-const SCREEN_PADDING = 20;
+// Rest of the component remains the same...
+
+const { width } = Dimensions.get('window');
+const CARD_MARGIN = 12;
 const GRID_SPACING = 12;
-const screenWidth = Dimensions.get('window').width;
-const tileSize = (screenWidth - SCREEN_PADDING * 2 - GRID_SPACING) / NUM_COLUMNS;
+const NUM_COLUMNS = 2;
+const CARD_WIDTH = (width - CARD_MARGIN * 2 - GRID_SPACING) / NUM_COLUMNS;
 
 export default function BrandSelectionScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
-  
-  const filteredBrands = BRANDS.filter(brand => 
-    brand.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { theme } = useAppTheme();
+  const { selectedBrands, toggleBrand } = useSelectedBrands();
 
-  const toggleBrandSelection = (brandId: string) => {
-    setSelectedBrands(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(brandId)) {
-        newSet.delete(brandId);
-      } else {
-        newSet.add(brandId);
-      }
-      return newSet;
-    });
-  };
+  console.log('Currently selected brands:', Array.from(selectedBrands));
 
   const handleContinue = () => {
-    if (selectedBrands.size > 0) {
-      // Save selected brands and navigate to main app
-      router.replace('/(tabs)');
-    }
+    console.log('Continuing with selected brands:', Array.from(selectedBrands));
+    router.push('/(tabs)/shop');
   };
-
-  const renderBrand = ({ item }: { item: typeof BRANDS[0] }) => (
-    <BrandTile
-      brand={item}
-      isSelected={selectedBrands.has(item.id)}
-      onPress={() => toggleBrandSelection(item.id)}
-      size={tileSize - GRID_SPACING}
-    />
-  );
 
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.title}>Choose Your Brands</ThemedText>
-      <ThemedText variant="secondary" style={styles.subtitle}>
+      <ThemedText style={styles.subtitle}>
         Select your favorite brands to see their best deals
       </ThemedText>
 
-      <Input
-        placeholder="Search brands"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        style={styles.searchInput}
-      />
-
       <FlatList
-        data={filteredBrands}
-        renderItem={renderBrand}
+        data={BRANDS}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[
+              styles.brandCard,
+              {
+                backgroundColor: selectedBrands.has(item.id) ? theme.primary : 'transparent',
+                borderColor: selectedBrands.has(item.id) ? theme.primary : theme.border,
+              },
+            ]}
+            onPress={() => {
+              toggleBrand(item.id);
+              console.log(`Toggled brand ${item.id}`);
+            }}
+          >
+            <ThemedText style={styles.brandLogo}>{item.logo}</ThemedText>
+            <ThemedText
+              style={[
+                styles.brandName,
+                {
+                  color: selectedBrands.has(item.id) ? '#FFFFFF' : theme.text,
+                },
+              ]}
+            >
+              {item.name}
+            </ThemedText>
+          </TouchableOpacity>
+        )}
+        numColumns={2}
         keyExtractor={item => item.id}
-        numColumns={NUM_COLUMNS}
         contentContainerStyle={styles.grid}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <ThemedText style={styles.emptyText}>
-            No brands found
-          </ThemedText>
-        }
       />
 
       <ThemedView style={styles.footer}>
-        <ThemedText variant="secondary">
+        <ThemedText>
           {selectedBrands.size} brands selected
         </ThemedText>
         <Button
@@ -109,35 +94,46 @@ export default function BrandSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: SCREEN_PADDING,
+    padding: 20,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 8,
-    marginTop: 60,
+    marginTop: 40,
   },
   subtitle: {
     fontSize: 16,
+    opacity: 0.7,
     marginBottom: 24,
-  },
-  searchInput: {
-    marginBottom: 16,
   },
   grid: {
     paddingBottom: 100,
   },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 32,
+  brandCard: {
+    width: CARD_WIDTH,
+    height: CARD_WIDTH,
+    margin: CARD_MARGIN / 2,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandLogo: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  brandName: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   footer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: SCREEN_PADDING,
-    gap: 12,
+    padding: 20,
     alignItems: 'center',
+    gap: 12,
   },
 });

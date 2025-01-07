@@ -5,6 +5,7 @@ import { Product } from '../../types/product';
 import { ThemedView } from '../ui/ThemedView';
 import { ThemedText } from '../ui/ThemedText';
 import { useAppTheme } from '../../contexts/ThemeContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 
 interface ProductCardProps {
   product: Product;
@@ -12,16 +13,23 @@ interface ProductCardProps {
 
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = 8;
-const CARD_WIDTH = (width - CARD_MARGIN * 4) / 2; // 2 columns with margins
+const CARD_WIDTH = (width - CARD_MARGIN * 4) / 2;
 
-export function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product }: ProductCardProps) {
   const { theme } = useAppTheme();
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
 
   const handlePress = () => {
-    router.push({
-      pathname: '/shop/ProductDetailScreen',
-      params: { productId: product.id }
-    });
+    router.push(`/shop/ProductDetailScreen?productId=${product.id}`);
+  };
+
+  const toggleFavorite = (e: any) => {
+    e.stopPropagation();
+    if (isFavorite(product.id)) {
+      removeFavorite(product.id);
+    } else {
+      addFavorite(product);
+    }
   };
 
   const discountPercentage = Math.round(
@@ -31,13 +39,21 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <TouchableOpacity onPress={handlePress}>
       <ThemedView style={[styles.card, { borderColor: theme.border }]}>
+        <TouchableOpacity 
+          style={styles.favoriteButton} 
+          onPress={toggleFavorite}
+        >
+          <ThemedText style={{ fontSize: 20 }}>
+            {isFavorite(product.id) ? '❤️' : '🤍'}
+          </ThemedText>
+        </TouchableOpacity>
         <Image
           source={{ uri: product.images[0] }}
           style={styles.image}
           resizeMode="cover"
         />
         <ThemedView style={styles.content}>
-          <ThemedText numberOfLines={1} style={styles.brand}>
+          <ThemedText variant="secondary" style={styles.brand}>
             {product.brandId.toUpperCase()}
           </ThemedText>
           <ThemedText numberOfLines={2} style={styles.name}>
@@ -68,17 +84,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
   },
+  favoriteButton: {
+    position: 'absolute',
+    right: 8,
+    top: 8,
+    zIndex: 1,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 15,
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   image: {
     width: '100%',
-    height: CARD_WIDTH, // Square aspect ratio
+    height: CARD_WIDTH,
   },
   content: {
-    padding: 8,
+    padding: 12,
   },
   brand: {
     fontSize: 12,
     marginBottom: 4,
-    opacity: 0.7,
   },
   name: {
     fontSize: 14,
