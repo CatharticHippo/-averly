@@ -1,95 +1,114 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedView } from '../../components/ui/ThemedView';
 import { ThemedText } from '../../components/ui/ThemedText';
-import { Button } from '../../components/ui/Button';
-import { getAllProducts } from '../../services/productService';
+import FilterPanel from '../../components/shop/FilterPanel';
 import ProductCard from '../../components/shop/ProductCard';
-import { Product } from '../../types/product';
 import { useSelectedBrands } from '../../contexts/BrandsContext';
+import { useAppTheme } from '../../contexts/ThemeContext';
+import { Product } from '../../types/product';
+import { getAllProducts } from '../../services/productService';
 
-export default function ShopTab() {
+const { width } = Dimensions.get('window');
+const COLUMN_GAP = 16;
+const NUM_COLUMNS = 2;
+const CARD_WIDTH = (width - COLUMN_GAP * (NUM_COLUMNS + 1)) / NUM_COLUMNS;
+
+export default function ShopScreen() {
+  const { theme } = useAppTheme();
+  const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { selectedBrands, hasSelectedBrands } = useSelectedBrands();
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const allProducts = await getAllProducts();
-        console.log('All products:', allProducts);
-        setProducts(allProducts);
-      } catch (error) {
-        console.error('Error loading products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadProducts();
   }, []);
 
-  console.log('Selected brands:', Array.from(selectedBrands));
-  console.log('Has selected brands:', hasSelectedBrands);
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      const allProducts = await getAllProducts();
+      setProducts(allProducts);
+      setFilteredProducts(allProducts);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  if (!hasSelectedBrands) {
-    return (
-      <ThemedView style={styles.centered}>
-        <ThemedText style={styles.message}>
-          Select your favorite brands to see their deals
-        </ThemedText>
-        <Button
-          title="Select Brands"
-          onPress={() => router.push('/shop/BrandSelectionScreen')}
-        />
-      </ThemedView>
-    );
-  }
+  const handleFilters = (filters: any) => {
+    let filtered = [...products];
 
-  if (loading) {
-    return (
-      <ThemedView style={styles.centered}>
-        <ThemedText>Loading products...</ThemedText>
-      </ThemedView>
-    );
-  }
+    // Apply brand filters
+    if (filters.brands.length > 0) {
+      filtered = filtered.filter(product => filters.brands.includes(product.brandId));
+    }
 
-  const filteredProducts = products.filter(product => 
-    selectedBrands.has(product.brandId)
+    // Apply category filters
+    if (filters.categories.length > 0) {
+      filtered = filtered.filter(product => filters.categories.includes(product.category));
+    }
+
+    // Apply sorting
+    switch (filters.sortBy) {
+      case 'price-low':
+        filtered.sort((a, b) => a.salePrice - b.salePrice);
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => b.salePrice - a.salePrice);
+        break;
+      case 'biggest-discount':
+        filtered.sort((a, b) => b.discount - a.discount);
+        break;
+    }
+
+    setFilteredProducts(filtered);
+  };
+
+  const renderProduct = ({ item }: { item: Product }) => (
+    <ProductCard
+      product={item}
+      style={{ width: CARD_WIDTH }}
+      onPress={() => router.push(`/shop/ProductDetailScreen?productId=${item.id}`)}
+    />
   );
-
-  console.log('Filtered products:', filteredProducts);
 
   return (
     <ThemedView style={styles.container}>
+      <ThemedView style={styles.header}>
+        <ThemedText style={styles.title}>Shop</ThemedText>
+        <TouchableOpacity
+          style={[styles.filterButton, { borderColor: theme.border }]}
+          onPress={() => setShowFilters(true)}
+        >
+          <ThemedText>Filter & Sort</ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+
       <FlatList
         data={filteredProducts}
-        renderItem={({ item }) => <ProductCard product={item} />}
+        renderItem={renderProduct}
         keyExtractor={item => item.id}
         numColumns={2}
         contentContainerStyle={styles.productGrid}
-        ListHeaderComponent={
-          <ThemedView style={styles.header}>
-            <ThemedText style={styles.title}>Latest Deals</ThemedText>
-            <ThemedText style={styles.subtitle}>
-              {filteredProducts.length} items on sale from your favorite brands
-            </ThemedText>
-          </ThemedView>
-        }
+        columnWrapperStyle={styles.row}
         ListEmptyComponent={
-          <ThemedView style={styles.centered}>
-            <ThemedText style={styles.message}>
-              No deals available from your selected brands right now.
-            </ThemedText>
-            <Button
-              title="Change Brands"
-              onPress={() => router.push('/shop/BrandSelectionScreen')}
-            />
+          <ThemedView style={styles.emptyState}>
+            <ThemedText>No products found</ThemedText>
           </ThemedView>
         }
       />
+
+      {showFilters && (
+        <FilterPanel
+          visible={showFilters}
+          onClose={() => setShowFilters(false)}
+          onApplyFilters={handleFilters}
+        />
+      )}
     </ThemedView>
   );
 }
@@ -98,32 +117,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-  },
-  message: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
-    opacity: 0.7,
-  },
-  header: {
-    padding: 20,
-    paddingBottom: 10,
+    paddingTop: 60,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 4,
   },
-  subtitle: {
-    fontSize: 16,
-    opacity: 0.7,
+  filterButton: {
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   productGrid: {
-    padding: 8,
+    padding: COLUMN_GAP,
+  },
+  row: {
+    gap: COLUMN_GAP,
+    justifyContent: 'flex-start',
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
   },
 });

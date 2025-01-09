@@ -28,6 +28,20 @@ export default function CartLayout() {
         }} 
       />
       <Stack.Screen 
+        name="CheckoutScreen" 
+        options={{ 
+          title: 'Checkout',
+          headerBackTitle: 'Cart'
+        }} 
+      />
+      <Stack.Screen 
+        name="AddAddressScreen" 
+        options={{ 
+          title: 'Add Address',
+          headerBackTitle: 'Checkout'
+        }} 
+      />
+      <Stack.Screen 
         name="shipping" 
         options={{ 
           title: 'Shipping',

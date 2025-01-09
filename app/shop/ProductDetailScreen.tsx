@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, ScrollView, Image, Dimensions, Pressable } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ThemedView } from '../../components/ui/ThemedView';
@@ -6,6 +6,8 @@ import { ThemedText } from '../../components/ui/ThemedText';
 import { Button } from '../../components/ui/Button';
 import { useAppTheme } from '../../contexts/ThemeContext';
 import { useCart } from '../../contexts/CartContext';
+import { getAllProducts } from '../../services/productService';
+import { Product } from '../../types/product';
 
 const { width } = Dimensions.get('window');
 
@@ -14,42 +16,41 @@ export default function ProductDetailScreen() {
   const { productId } = useLocalSearchParams();
   const { theme } = useAppTheme();
   const [selectedSize, setSelectedSize] = useState('');
-  const [product] = useState(() => {
-    // For demo, getting Nike products and finding the one we want
-    const products = [
-      {
-        id: 'nike-1',
-        brandId: 'nike',
-        name: 'Air Max 270',
-        description: 'Nike Air Max 270 Running Shoes',
-        originalPrice: 150,
-        salePrice: 89.99,
-        images: ['https://via.placeholder.com/300'],
-        sizes: ['7', '8', '9', '10', '11'],
-        colors: ['Black/White', 'Red/Black'],
-      },
-      {
-        id: 'nike-2',
-        brandId: 'nike',
-        name: 'Nike Dri-FIT',
-        description: 'Men\'s Training T-Shirt',
-        originalPrice: 35,
-        salePrice: 24.99,
-        images: ['https://via.placeholder.com/300'],
-        sizes: ['S', 'M', 'L', 'XL'],
-        colors: ['Black', 'Grey', 'Navy'],
-      }
-    ];
-    return products.find(p => p.id === productId) || products[0];
-  });
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const discountPercentage = Math.round(
-    ((product.originalPrice - product.salePrice) / product.originalPrice) * 100
-  );
+  useEffect(() => {
+    const loadProduct = async () => {
+      try {
+        setLoading(true);
+        const allProducts = await getAllProducts();
+        const foundProduct = allProducts.find(p => p.id === productId);
+        if (foundProduct) {
+          setProduct(foundProduct);
+        }
+      } catch (error) {
+        console.error('Error loading product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [productId]);
+
+  if (loading || !product) {
+    return (
+      <ThemedView style={styles.centered}>
+        <ThemedText>Loading product...</ThemedText>
+      </ThemedView>
+    );
+  }
 
   const handleAddToCart = () => {
-    addItem(product, selectedSize);
-    router.push('/(tabs)/cart');
+    if (product && selectedSize) {
+      addItem(product, selectedSize);
+      router.push('/(tabs)/cart');
+    }
   };
 
   return (
@@ -75,7 +76,7 @@ export default function ProductDetailScreen() {
             ${product.originalPrice}
           </ThemedText>
           <ThemedText style={[styles.discount, { color: theme.error }]}>
-            {discountPercentage}% OFF
+            {product.discount}% OFF
           </ThemedText>
         </ThemedView>
 
@@ -124,6 +125,11 @@ export default function ProductDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   image: {
     width,

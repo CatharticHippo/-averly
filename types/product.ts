@@ -5,9 +5,10 @@ export interface Product {
   description: string;
   originalPrice: number;
   salePrice: number;
-  discount?: number;  // Made optional since we can calculate it
+  discount: number;
   images: string[];
   sizes: string[];
   colors: string[];
-  url?: string;      // Made optional for now
+  url?: string;
+  category: string;  // Added this field
 }

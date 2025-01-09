@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StyleSheet, Animated } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedView } from '../components/ui/ThemedView';
 import { ThemedText } from '../components/ui/ThemedText';
 import { useAppTheme } from '../contexts/ThemeContext';
+import { Colors } from '../constants/Colors';
 
 export default function SplashPage() {
   const { theme } = useAppTheme();
@@ -32,7 +33,7 @@ export default function SplashPage() {
   }, []);
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor: theme.background }]}>
       <Animated.View
         style={[
           styles.content,
@@ -43,15 +44,14 @@ export default function SplashPage() {
         ]}
       >
         <ThemedText 
-          style={[styles.title, { color: theme.primary }]}
+          style={[styles.title, { color: Colors.light.primary }]}
         >
-          Saverly
+          $avrly
         </ThemedText>
         <ThemedText 
-          variant="secondary" 
-          style={styles.subtitle}
+          style={[styles.subtitle, { color: Colors.light.secondary }]}
         >
-          Break Free from bad pricing.
+          Break free from bad pricing
         </ThemedText>
       </Animated.View>
     </ThemedView>
@@ -68,11 +68,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 48,
-    fontWeight: 'bold',
+    fontSize: 56,
+    fontWeight: '800',
     marginBottom: 10,
+    letterSpacing: 2,
   },
   subtitle: {
     fontSize: 18,
+    fontWeight: '500',
+    letterSpacing: 0.5,
   },
 });

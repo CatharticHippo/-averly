@@ -10,12 +10,19 @@ import { useAppTheme } from '../../contexts/ThemeContext';
 // Previous imports remain the same...
 
 const BRANDS = [
-  { id: 'nike', name: 'Nike', logo: '👟' },
-  { id: 'adidas', name: 'Adidas', logo: '🏃' },
   { id: 'northface', name: 'The North Face', logo: '🏔️' },
-  { id: 'patagonia', name: 'Patagonia', logo: '🌲' },
-  { id: 'lululemon', name: 'Lululemon', logo: '🧘' },
+  { id: 'timberland', name: 'Timberland', logo: '👢' },
+  { id: 'vans', name: 'Vans', logo: '🛹' },
+  { id: 'dickies', name: 'Dickies', logo: '👖' },
+  { id: 'jansport', name: 'JanSport', logo: '🎒' },
+  { id: 'eastpak', name: 'Eastpak', logo: '🎒' },
+  { id: 'kipling', name: 'Kipling', logo: '🐒' },
+  { id: 'napapijri', name: 'Napapijri', logo: '🧥' },
+  { id: 'smartwool', name: 'Smartwool', logo: '🧦' },
+  { id: 'icebreaker', name: 'Icebreaker', logo: '❄️' },
+  { id: 'altra', name: 'Altra Running', logo: '🏃' }
 ];
+
 
 // Rest of the component remains the same...
 
