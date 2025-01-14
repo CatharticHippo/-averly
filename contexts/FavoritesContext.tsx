@@ -6,6 +6,7 @@ interface FavoritesContextType {
   addFavorite: (product: Product) => void;
   removeFavorite: (productId: string) => void;
   isFavorite: (productId: string) => boolean;
+  toggleFavorite: (product: Product) => void;
 }
 
 const FavoritesContext = createContext<FavoritesContextType>({
@@ -13,6 +14,7 @@ const FavoritesContext = createContext<FavoritesContextType>({
   addFavorite: () => {},
   removeFavorite: () => {},
   isFavorite: () => false,
+  toggleFavorite: () => {},
 });
 
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
@@ -33,6 +35,14 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     return favorites.some(p => p.id === productId);
   };
 
+  const toggleFavorite = (product: Product) => {
+    if (isFavorite(product.id)) {
+      removeFavorite(product.id);
+    } else {
+      addFavorite(product);
+    }
+  };
+
   return (
     <FavoritesContext.Provider
       value={{
@@ -40,6 +50,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         addFavorite,
         removeFavorite,
         isFavorite,
+        toggleFavorite,
       }}
     >
       {children}

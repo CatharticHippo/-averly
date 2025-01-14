@@ -1,40 +1,50 @@
 import { Tabs } from 'expo-router';
 import { useAppTheme } from '../../contexts/ThemeContext';
-import { useCart } from '../../contexts/CartContext';
-import { Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const { theme } = useAppTheme();
-  const { itemCount } = useCart();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.primary,
-        tabBarStyle: { backgroundColor: theme.background },
+        tabBarInactiveTintColor: theme.secondaryText,
+        tabBarStyle: { 
+          backgroundColor: theme.background,
+          borderTopColor: theme.border,
+        }
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarLabel: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
+          ),
+          tabBarLabel: '' // Remove label to just show icon
         }}
       />
       <Tabs.Screen
         name="shop"
         options={{
           title: 'Shop',
-          tabBarLabel: 'Shop',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="search-outline" size={size} color={color} />
+          ),
+          tabBarLabel: ''
         }}
       />
       <Tabs.Screen
         name="cart"
         options={{
           title: 'Cart',
-          tabBarLabel: 'Cart',
-          tabBarBadge: itemCount ? itemCount : undefined,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="cart-outline" size={size} color={color} />
+          ),
+          tabBarLabel: ''
         }}
       />
     </Tabs>

@@ -16,7 +16,7 @@ export default function CartScreen() {
         <ThemedText style={styles.emptyText}>Your cart is empty</ThemedText>
         <Button 
           title="Start Shopping" 
-          onPress={() => router.push("/(tabs)/shop")}
+          onPress={() => router.push('/(tabs)/shop')}
         />
       </ThemedView>
     );
@@ -40,7 +40,7 @@ export default function CartScreen() {
         </ThemedView>
         <Button
           title="Proceed to Checkout"
-          onPress={() => router.push("/(cart)/shipping")}
+          onPress={() => router.push('/(cart)/ShippingScreen')}
         />
       </ThemedView>
     </ThemedView>

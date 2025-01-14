@@ -15,6 +15,7 @@ interface FilterPanelProps {
 }
 
 const BRANDS = [
+  // VF Corporation Brands
   { id: 'northface', name: 'The North Face', logo: '🏔️' },
   { id: 'timberland', name: 'Timberland', logo: '👢' },
   { id: 'vans', name: 'Vans', logo: '🛹' },
@@ -26,18 +27,46 @@ const BRANDS = [
   { id: 'smartwool', name: 'Smartwool', logo: '🧦' },
   { id: 'icebreaker', name: 'Icebreaker', logo: '❄️' },
   { id: 'altra', name: 'Altra Running', logo: '🏃' },
+
+  // ABG Brands
+  { id: 'brooks-brothers', name: 'Brooks Brothers', logo: '👔' },
+  { id: 'lucky-brand', name: 'Lucky Brand', logo: '👖' },
+  { id: 'aeropostale', name: 'Aeropostale', logo: '👕' },
+  { id: 'forever21', name: 'Forever 21', logo: '👗' },
+  { id: 'juicy-couture', name: 'Juicy Couture', logo: '👚' },
+  { id: 'nautica', name: 'Nautica', logo: '⛵' },
+  { id: 'eddie-bauer', name: 'Eddie Bauer', logo: '🏕️' },
+  { id: 'volcom', name: 'Volcom', logo: '🏄' },
+  { id: 'spyder', name: 'Spyder', logo: '🎿' },
+  { id: 'airwalk', name: 'Airwalk', logo: '🛹' },
+
+  // PVH Brands
+  { id: 'calvin-klein', name: 'Calvin Klein', logo: '👔' },
+  { id: 'tommy-hilfiger', name: 'Tommy Hilfiger', logo: '👕' },
+  { id: 'vanHeusen', name: 'Van Heusen', logo: '👔' },
+  { id: 'izod', name: 'IZOD', logo: '👕' },
+  { id: 'arrow', name: 'Arrow', logo: '👔' },
+  { id: 'warnerBras', name: 'Warner\'s', logo: '👚' },
+  { id: 'olga', name: 'Olga', logo: '👚' },
+  { id: 'true-co', name: 'True & Co', logo: '👚' }
 ];
 
 const CATEGORIES = [
-  'Jackets',
+  'Jackets & Outerwear',
+  'Shirts & Tops',
+  'Pants & Bottoms',
+  'Dresses',
+  'Activewear',
+  'Denim',
   'Footwear',
-  'Bags',
-  'Accessories',
-  'Pants',
-  'Shirts',
+  'Bags & Accessories',
+  'Underwear & Intimates',
+  'Swimwear',
+  'Formalwear',
+  'Athletic Gear'
 ];
 
-const FilterPanel: React.FC<FilterPanelProps> = ({ visible, onClose, onApplyFilters }) => {
+export default function FilterPanel({ visible, onClose, onApplyFilters }: FilterPanelProps) {
   const { theme } = useAppTheme();
   const { selectedBrands, toggleBrand } = useSelectedBrands();
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
@@ -72,7 +101,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ visible, onClose, onApplyFilt
       onRequestClose={onClose}
     >
       <ThemedView style={styles.modalContainer}>
-        <ThemedView style={[styles.container, { backgroundColor: theme.background }]}>          
+        <ThemedView style={[styles.container, { backgroundColor: theme.background }]}>
           <ThemedView style={styles.header}>
             <ThemedText style={styles.title}>Filter & Sort</ThemedText>
             <TouchableOpacity onPress={onClose}>
@@ -168,19 +197,20 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ visible, onClose, onApplyFilt
           </ScrollView>
 
           <ThemedView style={styles.footer}>
-            <Button title="Clear All" onPress={() => {
-              setSelectedCategories(new Set());
-              setSortBy('newest');
-            }} />
+            <Button 
+              title="Clear All" 
+              onPress={() => {
+                setSelectedCategories(new Set());
+                setSortBy('newest');
+              }} 
+            />
             <Button title="Apply Filters" onPress={handleApply} />
           </ThemedView>
         </ThemedView>
       </ThemedView>
     </Modal>
   );
-};
-
-export default FilterPanel;
+}
 
 const styles = StyleSheet.create({
   modalContainer: {

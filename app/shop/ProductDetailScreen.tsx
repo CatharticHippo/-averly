@@ -12,24 +12,36 @@ import { Product } from '../../types/product';
 const { width } = Dimensions.get('window');
 
 export default function ProductDetailScreen() {
-  const { addItem } = useCart();
   const { productId } = useLocalSearchParams();
   const { theme } = useAppTheme();
+  const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProduct = async () => {
       try {
         setLoading(true);
+        // Log the productId we're looking for
+        console.log('Looking for product ID:', productId);
+        
         const allProducts = await getAllProducts();
+        // Log all available product IDs
+        console.log('Available product IDs:', allProducts.map(p => p.id));
+        
         const foundProduct = allProducts.find(p => p.id === productId);
+        
         if (foundProduct) {
           setProduct(foundProduct);
+        } else {
+          setError('Product not found');
+          console.log('Product not found with ID:', productId);
         }
-      } catch (error) {
-        console.error('Error loading product:', error);
+      } catch (err) {
+        setError('Failed to load product');
+        console.error('Error loading product:', err);
       } finally {
         setLoading(false);
       }
@@ -38,7 +50,7 @@ export default function ProductDetailScreen() {
     loadProduct();
   }, [productId]);
 
-  if (loading || !product) {
+  if (loading) {
     return (
       <ThemedView style={styles.centered}>
         <ThemedText>Loading product...</ThemedText>
@@ -46,8 +58,21 @@ export default function ProductDetailScreen() {
     );
   }
 
+  if (error || !product) {
+    return (
+      <ThemedView style={styles.centered}>
+        <ThemedText>{error || 'Product not found'}</ThemedText>
+        <Button 
+          title="Go Back" 
+          onPress={() => router.back()}
+          style={styles.errorButton}
+        />
+      </ThemedView>
+    );
+  }
+
   const handleAddToCart = () => {
-    if (product && selectedSize) {
+    if (selectedSize) {
       addItem(product, selectedSize);
       router.push('/(tabs)/cart');
     }
@@ -130,6 +155,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
+  },
+  errorButton: {
+    marginTop: 20,
   },
   image: {
     width,
