@@ -1,4 +1,5 @@
-$vrly
+$vrly (-averly) © 2024 by Jordan Finfrock is licensed under CC BY-NC-SA 4.0 
+
 $vrly is your go-to platform for discovering clearance deals from local small businesses, helping you save while supporting your community.
 Features
 
